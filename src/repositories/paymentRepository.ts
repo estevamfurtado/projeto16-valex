@@ -1,4 +1,5 @@
 import { connection } from "../database.js";
+import { chalkLogger } from "../utils/chalkLogger.js";
 
 export interface Payment {
   id: number;
@@ -32,4 +33,11 @@ export async function insert(paymentData: PaymentInsertData) {
     `INSERT INTO payments ("cardId", "businessId", amount) VALUES ($1, $2, $3)`,
     [cardId, businessId, amount]
   );
+
+  chalkLogger.log("service", `Payment created`);
 }
+
+export const paymentRepository = {
+  findByCardId,
+  insert,
+};

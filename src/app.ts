@@ -1,19 +1,19 @@
 import express, { json, Request, Response } from "express";
 import cors from "cors";
 import errorHandlingMiddleware from "./utils/errorHandlerMiddleware.js";
-import { chalklogger } from "./utils/chalk.js";
 import router from "./routers/index.js";
+import { AppError } from "./utils/errors/AppError.js";
+import 'express-async-errors';
 
 const app = express();
 app.use(cors());
 app.use(json());
-app.use(errorHandlingMiddleware);
-app.use(router);
 
-// Routes
+app.use(router);
 app.get('/', (req: Request, res: Response) => {
     res.json({ message: 'Welcome to Valex' });
 });
 
+app.use(errorHandlingMiddleware);
 
 export default app;

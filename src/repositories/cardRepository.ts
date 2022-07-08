@@ -1,4 +1,5 @@
 import { connection } from "../database.js";
+import { chalkLogger } from "../utils/chalkLogger.js";
 import { mapObjectToUpdateQuery } from "../utils/sqlUtils.js";
 
 export type TransactionTypes =
@@ -100,6 +101,8 @@ export async function insert(cardData: CardInsertData) {
       type,
     ]
   );
+
+  chalkLogger.log("api", `New card inserted into database`);
 }
 
 export async function update(id: number, cardData: CardUpdateData) {
@@ -117,8 +120,20 @@ export async function update(id: number, cardData: CardUpdateData) {
   `,
     [id, ...cardValues]
   );
+
+  chalkLogger.log("api", `Card updated`);
 }
 
 export async function remove(id: number) {
   connection.query<any, [number]>("DELETE FROM cards WHERE id=$1", [id]);
 }
+
+export const cardRepository = {
+  find,
+  findById,
+  findByTypeAndEmployeeId,
+  findByCardDetails,
+  insert,
+  update,
+  remove,
+};

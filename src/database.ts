@@ -12,5 +12,5 @@ const databaseConfig = {
     connectionString: DB_URL,
 };
 
-const db = new Pool(databaseConfig);
-export default db;
+const connection = new Pool(databaseConfig);
+export {connection};

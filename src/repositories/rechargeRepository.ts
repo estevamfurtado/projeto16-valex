@@ -1,4 +1,5 @@
 import { connection } from "../database.js";
+import { chalkLogger } from "../utils/chalkLogger.js";
 
 export interface Recharge {
   id: number;
@@ -19,9 +20,14 @@ export async function findByCardId(cardId: number) {
 
 export async function insert(rechargeData: RechargeInsertData) {
   const { cardId, amount } = rechargeData;
-
   connection.query<any, [number, number]>(
     `INSERT INTO recharges ("cardId", amount) VALUES ($1, $2)`,
     [cardId, amount]
   );
+  chalkLogger.log("api", `Recharge created`);
 }
+
+export const rechargeRepository = {
+  findByCardId,
+  insert,
+};
