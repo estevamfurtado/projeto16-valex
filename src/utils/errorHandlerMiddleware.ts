@@ -4,6 +4,8 @@ import { AppError } from './errors/AppError.js';
 
 function errorHandlingMiddleware(error: any, req: Request, res: Response, next: NextFunction) {
 	
+	console.log({error});
+
 	if (error instanceof AppError) {
 		chalkLogger.log('error', error.message);
 		return res.status(error.statusCode).send({ message: error.message, status: 'error' });

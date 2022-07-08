@@ -7,6 +7,7 @@ import { cardsService } from "../services/cards.js";
 
 function setLocalsFromRequestData (params: string[], body: string[], headers: string[], query: string[]) {
     return (req: Request, res: Response, next: NextFunction) => {
+
         const locals = {...res.locals};
         params.forEach(param => {
             if (!req.params[param]) {
@@ -78,9 +79,14 @@ async function getCompanyByApiKey (req: Request, res: Response, next: NextFuncti
 }
 
 async function getBusinessById (req: Request, res: Response, next: NextFunction) {
+
+    console.log('getBusinessById');
+    throw new AppError(501, "Not implemented");
+
     const {businessId} = res.locals;
     const business = await repos.business.findById(businessId);
     if (!business) {
+        console.log('business not found!!');
         throw new AppError(404, "Business not found");
     }
     res.locals.business = business;

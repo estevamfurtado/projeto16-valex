@@ -160,19 +160,23 @@ async function newPayment(business: Business, card: Card, amount: number) {
     if (!cardIsActive(card)) {
         throw new AppError(400, 'Card is not active');
     }
+    console.log('card is active')
     
     if (business.type !== card.type) {
         throw new AppError(400, 'Card has different type');
     }
+    console.log('business and card are same type')
 
     if (amount <= 0) {
         throw new AppError(400, 'Amount is invalid');
     }
+    console.log('amount is valid')
 
     const balance = await calculateBalance(card);
     if (balance < amount) {
         throw new AppError(400, 'Insufficient funds');
     }
+    console.log('card has funds')
 
     await paymentRepository.insert({
         cardId: card.id,
@@ -200,19 +204,20 @@ async function calculateBalance(card: Card) {
 async function getCardsByEmployeeId (employeeId: number, passwords: string[]) {
     const cards = await cardRepository.findByEmployeeId(employeeId);
 
-    // filter active cards that match passwords
-    const activeCards = cards.filter(async (card) => {
-        const isActive = cardIsActive(card);
-        let hasPassword = false;
-        if (isActive) {
-            passwords.forEach(async (password) => {
-                const isValid = await bcrypt.compare(password, card.password);
-                if (isValid) {hasPassword = true;}
-            })
-            return hasPassword;
-        }
-        return false;
-    });
+    // filter active cards that match passwords with bcrypt (async)
+    const activeCards = await Promise.all(
+        cards.filter(card => {
+            const isActive = cardIsActive(card);
+            let validPassword = false;
+            if (isActive) {
+                validPassword = passwords.some(password => bcrypt.compare(password, card.password));
+            }
+            return isActive && validPassword;
+        })
+    );
+
+
+    console.log(activeCards);
 
     const cardData = activeCards.map((card) => {
         const update = {
