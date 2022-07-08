@@ -1,15 +1,17 @@
-import express, { json, Request, Response } from "express";
+import express, { json, Request, Response, NextFunction } from "express";
 import cors from "cors";
-import errorHandlingMiddleware from "./utils/errorHandlerMiddleware.js";
-import router from "./routers/index.js";
-import { AppError } from "./utils/errors/AppError.js";
+import 'express-async-errors';
+import router from "./routers/index";
+import { mws } from "./middlewares";
+import errorHandlingMiddleware from "./utils/errorHandlerMiddleware";
 
 const app = express();
 app.use(cors());
 app.use(json());
 
+
 app.use(router);
-app.get('/', (req: Request, res: Response) => {
+app.get('/', mws.help.throwAppError, (req: Request, res: Response) => {
     res.json({ message: 'Welcome to Valex' });
 });
 

@@ -1,9 +1,9 @@
-import { businessRepository } from "./businessRepository.js"
-import { cardRepository } from "./cardRepository.js"
-import { companyRepository } from "./companyRepository.js"
-import { employeeRepository } from "./employeeRepository.js"
-import { paymentRepository } from "./paymentRepository.js"
-import { rechargeRepository } from "./rechargeRepository.js"
+import { businessRepository } from "./businessRepository"
+import { cardRepository } from "./cardRepository"
+import { companyRepository } from "./companyRepository"
+import { employeeRepository } from "./employeeRepository"
+import { paymentRepository } from "./paymentRepository"
+import { rechargeRepository } from "./rechargeRepository"
 
 export const repos = {
     business: businessRepository,

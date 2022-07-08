@@ -1,14 +1,14 @@
-import { cardRepository, Card, TransactionTypes } from "../repositories/cardRepository.js";
-import { Employee, employeeRepository } from "../repositories/employeeRepository.js";
+import { cardRepository, Card, CardInsertData, TransactionTypes } from "../repositories/cardRepository";
+import { Employee, employeeRepository } from "../repositories/employeeRepository";
 import { faker } from '@faker-js/faker';
 import Cryptr from 'cryptr';
 import bcrypt from 'bcrypt';
-import { chalkLogger } from "../utils/chalkLogger.js";
-import { AppError } from "../utils/errors/AppError.js";
-import { Company } from "../repositories/companyRepository.js";
-import { rechargeRepository } from "../repositories/rechargeRepository.js";
-import { Business } from "../repositories/businessRepository.js";
-import { paymentRepository } from "../repositories/paymentRepository.js";
+import { chalkLogger } from "../utils/chalkLogger";
+import { AppError } from "../utils/errors/AppError";
+import { Company } from "../repositories/companyRepository";
+import { rechargeRepository } from "../repositories/rechargeRepository";
+import { Business } from "../repositories/businessRepository";
+import { paymentRepository } from "../repositories/paymentRepository";
 
 const secretKey = process.env.CRYPTR_SECRET ?? 'CRYPTR_SECRET';
 const cryptr = new Cryptr(secretKey);
@@ -16,7 +16,10 @@ const cryptr = new Cryptr(secretKey);
 
 
 async function validatePassword(card: Card, password: string) {
-    const isValid = await bcrypt.compare(password, card.password);
+    if (!card.password) {
+        throw new AppError(400, 'Card is not activated');
+    }
+    const isValid = await bcrypt.compare(password, card.password as string);
     if (!isValid) {
         throw new AppError(400, 'Invalid password');
     }
@@ -52,6 +55,7 @@ async function createCard (employee: Employee, type: TransactionTypes) {
         isBlocked: true,
         type: type
     }
+
     const savedCard = await cardRepository.insert(card);
     chalkLogger.log("service", `Card created`);
     return card;
@@ -160,17 +164,14 @@ async function newPayment(business: Business, card: Card, amount: number) {
     if (!cardIsActive(card)) {
         throw new AppError(400, 'Card is not active');
     }
-    console.log('card is active')
     
     if (business.type !== card.type) {
         throw new AppError(400, 'Card has different type');
     }
-    console.log('business and card are same type')
 
     if (amount <= 0) {
         throw new AppError(400, 'Amount is invalid');
     }
-    console.log('amount is valid')
 
     const balance = await calculateBalance(card);
     if (balance < amount) {
@@ -202,24 +203,30 @@ async function calculateBalance(card: Card) {
 }
 
 async function getCardsByEmployeeId (employeeId: number, passwords: string[]) {
+    
     const cards = await cardRepository.findByEmployeeId(employeeId);
+    const activeCards = cards.filter(card => cardIsActive(card));
+    
+    const cardsWithPasswords: Card[] = [];
 
-    // filter active cards that match passwords with bcrypt (async)
-    const activeCards = await Promise.all(
-        cards.filter(card => {
-            const isActive = cardIsActive(card);
-            let validPassword = false;
-            if (isActive) {
-                validPassword = passwords.some(password => bcrypt.compare(password, card.password));
+    for (const card of activeCards) {
+        let hasPassword = false;
+        if (card.password) {
+            for (const password of passwords) {
+                if (await bcrypt.compare(password, card.password)) {
+                    hasPassword = true;
+                    break;
+                }
             }
-            return isActive && validPassword;
-        })
-    );
+        }
+        if (hasPassword) {
+            cardsWithPasswords.push(card);
+        }
+    }
 
+    console.log(cardsWithPasswords);
 
-    console.log(activeCards);
-
-    const cardData = activeCards.map((card) => {
+    const cardData = cardsWithPasswords.map((card) => {
         const update = {
             number: card.number,
             cardholderName: card.cardholderName,

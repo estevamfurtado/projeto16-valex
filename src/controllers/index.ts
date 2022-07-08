@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { cardsService } from "../services/cards.js";
-import { chalkLogger } from "../utils/chalkLogger.js";
-import { Company } from "../repositories/companyRepository.js";
+import { cardsService } from "../services/cards";
+import { chalkLogger } from "../utils/chalkLogger";
+import { Company } from "../repositories/companyRepository";
 
 async function sendCards(req: Request, res: Response) {
     const {employeeId, passwords} = res.locals;

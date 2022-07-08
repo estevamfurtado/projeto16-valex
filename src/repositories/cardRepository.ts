@@ -1,6 +1,6 @@
-import { connection } from "../database.js";
-import { chalkLogger } from "../utils/chalkLogger.js";
-import { mapObjectToUpdateQuery } from "../utils/sqlUtils.js";
+import { connection } from "../database";
+import { chalkLogger } from "../utils/chalkLogger";
+import { mapObjectToUpdateQuery } from "../utils/sqlUtils";
 
 export type TransactionTypes =
   | "groceries"
@@ -16,9 +16,9 @@ export interface Card {
   cardholderName: string;
   securityCode: string;
   expirationDate: string;
-  password?: string;
+  password?: string | null;
   isVirtual: boolean;
-  originalCardId?: number;
+  originalCardId?: number | null;
   isBlocked: boolean;
   type: TransactionTypes;
 }

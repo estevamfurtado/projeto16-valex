@@ -1,5 +1,5 @@
-import { connection } from "../database.js";
-import { chalkLogger } from "../utils/chalkLogger.js";
+import { connection } from "../database";
+import { chalkLogger } from "../utils/chalkLogger";
 
 export interface Recharge {
   id: number;
