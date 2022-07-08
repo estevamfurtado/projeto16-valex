@@ -156,6 +156,7 @@ async function newRecharge(company: Company, card: Card, amount: number) {
 } 
 
 async function newPayment(business: Business, card: Card, amount: number) {
+
     if (!cardIsActive(card)) {
         throw new AppError(400, 'Card is not active');
     }
@@ -168,6 +169,11 @@ async function newPayment(business: Business, card: Card, amount: number) {
         throw new AppError(400, 'Amount is invalid');
     }
 
+    const balance = await calculateBalance(card);
+    if (balance < amount) {
+        throw new AppError(400, 'Insufficient funds');
+    }
+
     await paymentRepository.insert({
         cardId: card.id,
         amount: amount,
@@ -177,15 +183,61 @@ async function newPayment(business: Business, card: Card, amount: number) {
     chalkLogger.log("service", `Payment created`);
 }
 
+async function getCardBalance (card: Card) {
+    const payments = await paymentRepository.findByCardId(card.id);
+    const recharges = await rechargeRepository.findByCardId(card.id);
+    const totalPayments = payments.reduce((acc, payment) => acc + payment.amount, 0);
+    const totalRecharges = recharges.reduce((acc, recharge) => acc + recharge.amount, 0);
+    const balance = totalRecharges - totalPayments;
+    return {balance, payments, recharges};
+}
+
+async function calculateBalance(card: Card) {
+    const balance = await getCardBalance(card);
+    return balance.balance;
+}
+
+async function getCardsByEmployeeId (employeeId: number, passwords: string[]) {
+    const cards = await cardRepository.findByEmployeeId(employeeId);
+
+    // filter active cards that match passwords
+    const activeCards = cards.filter(async (card) => {
+        const isActive = cardIsActive(card);
+        let hasPassword = false;
+        if (isActive) {
+            passwords.forEach(async (password) => {
+                const isValid = await bcrypt.compare(password, card.password);
+                if (isValid) {hasPassword = true;}
+            })
+            return hasPassword;
+        }
+        return false;
+    });
+
+    const cardData = activeCards.map((card) => {
+        const update = {
+            number: card.number,
+            cardholderName: card.cardholderName,
+            expirationDate: card.expirationDate,
+            securityCode: cryptr.decrypt(card.securityCode)
+        }
+        return update;
+    })
+
+    return {cards: cardData};
+}
+
 export const cardsService = {
-    createCard,
-    activateCard,
     validatePassword,
     validateCvv,
-    blockCard,
-    unblockCard,
     cardHasExpired,
     cardIsActive,
+    createCard,
+    activateCard,
+    blockCard,
+    unblockCard,
     newRecharge,
     newPayment,
+    getCardBalance,
+    getCardsByEmployeeId,
 }

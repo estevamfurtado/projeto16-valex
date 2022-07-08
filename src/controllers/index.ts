@@ -4,7 +4,10 @@ import { chalkLogger } from "../utils/chalkLogger.js";
 import { Company } from "../repositories/companyRepository.js";
 
 async function sendCards(req: Request, res: Response) {
-    res.sendStatus(200);
+    const {employeeId, passwords} = res.locals;
+    const data = await cardsService.getCardsByEmployeeId(employeeId, passwords);
+    chalkLogger.log("controller", `Cards sent for employee ${employeeId}`);
+    res.status(200).send(data);
 }
 
 async function createCard(req: Request, res: Response) {
@@ -36,7 +39,10 @@ async function unblockCard(req: Request, res: Response) {
 }
 
 async function sendCardBalance(req: Request, res: Response) {
-    res.sendStatus(200);
+    const {card} = res.locals;
+    const data = await cardsService.getCardBalance(card);
+    chalkLogger.log("controller", `Card ${card.id} balance sent`);
+    res.status(200).send(data);
 }
 
 async function persistCardRecharge(req: Request, res: Response) {

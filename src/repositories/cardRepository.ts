@@ -128,11 +128,21 @@ export async function remove(id: number) {
   connection.query<any, [number]>("DELETE FROM cards WHERE id=$1", [id]);
 }
 
+export async function findByEmployeeId(employeeId: number) {
+  const result = await connection.query<Card, [number]>(
+    `SELECT * FROM cards WHERE "employeeId"=$1`,
+    [employeeId]
+  );
+
+  return result.rows;
+}
+
 export const cardRepository = {
   find,
   findById,
   findByTypeAndEmployeeId,
   findByCardDetails,
+  findByEmployeeId,
   insert,
   update,
   remove,

@@ -6,7 +6,8 @@ import { chalkLogger } from "../utils/chalkLogger.js";
 const router = Router();
 
 router.get('/', 
-    chalkLogger.logMiddleware("route", "Get all cards"),   
+    chalkLogger.logMiddleware("route", "Get all cards"),
+    middlewares.validate.setLocalsFromRequestData([],["passwords", "employeeId"],[],[]),
     controllers.card.sendCards
 )
 
@@ -44,7 +45,12 @@ router.post('/:cardId/unblock',
     controllers.card.unblockCard
 )
 
-router.get('/:cardId/balance', controllers.transactions.sendCardBalance) // get balance and transactions
+router.get('/:cardId/balance', 
+    chalkLogger.logMiddleware("route", "Get card balance"),
+    middlewares.validate.setLocalsFromRequestData(["cardId"], [], [], []),
+    middlewares.validate.getCardById,
+    controllers.transactions.sendCardBalance
+)
 
 router.post('/:cardId/recharge',
     chalkLogger.logMiddleware("route", "Recharge card"),
@@ -53,14 +59,15 @@ router.post('/:cardId/recharge',
     middlewares.validate.getCompanyByApiKey,
     middlewares.validate.getCardById,
     controllers.transactions.persistCardRecharge
-) // unblock card
+)
 
 router.post('/:cardId/payment', 
     chalkLogger.logMiddleware("route", "Recharge card"),
-    middlewares.validate.setLocalsFromRequestData(["cardId"], ["amount", "businessId"], [], []),
+    middlewares.validate.setLocalsFromRequestData(["cardId"], ["amount", "businessId", "password"], [], []),
     middlewares.validate.getBusinessById,
     middlewares.validate.getCardById,
+    middlewares.validate.validateCardPassword,
     controllers.transactions.persistCardPayment
-) // card payment
+)
 
 export default router;
