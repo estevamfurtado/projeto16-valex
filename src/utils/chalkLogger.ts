@@ -15,12 +15,12 @@ const types = {
 };
 
 
-function log (type: string, message: string) {
-    console.log(`${types[type]} ${message}`);
+function log (type: any, message: string) {
+    console.log(`${types[type as keyof typeof types]} ${message}`);
 }
 
-function logObject (type: string, obj: object) {
-    console.log(`${types[type]}`);
+function logObject (type: any, obj: object) {
+    console.log(`${types[type as keyof typeof types]}`);
     console.log(obj);
 }
 
