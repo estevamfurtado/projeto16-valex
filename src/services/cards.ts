@@ -40,7 +40,8 @@ async function createCard (employee: Employee, type: TransactionTypes) {
     chalkLogger.log("service", `Creating card for employee ${employee.id}`);
 
     const number = faker.finance.creditCardNumber('#### #### #### ####');
-    const cvv = cryptr.encrypt(faker.finance.creditCardCVV());
+    const decryptedCvv = faker.finance.creditCardCVV();
+    const cvv = cryptr.encrypt(decryptedCvv);
     const expirationDate = generateExpirationDate();
 
     const card = {
@@ -57,7 +58,7 @@ async function createCard (employee: Employee, type: TransactionTypes) {
     }
 
     const savedCard = await cardRepository.insert(card);
-    chalkLogger.log("service", `Card (id ${savedCard.id}) created with cvv: ${cvv}`);
+    chalkLogger.log("service", `Card (id ${savedCard.id}) created with cvv: ${decryptedCvv}`);
     return card;
 }
 
