@@ -82,11 +82,12 @@ export async function insert(cardData: CardInsertData) {
     type,
   } = cardData;
 
-  connection.query(
+  const res = await connection.query(
     `
     INSERT INTO cards ("employeeId", number, "cardholderName", "securityCode",
       "expirationDate", password, "isVirtual", "originalCardId", "isBlocked", type)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    RETURNING *;
   `,
     [
       employeeId,
@@ -103,6 +104,7 @@ export async function insert(cardData: CardInsertData) {
   );
 
   chalkLogger.log("api", `New card inserted into database`);
+  return res.rows[0];
 }
 
 export async function update(id: number, cardData: CardUpdateData) {

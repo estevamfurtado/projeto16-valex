@@ -57,7 +57,7 @@ async function createCard (employee: Employee, type: TransactionTypes) {
     }
 
     const savedCard = await cardRepository.insert(card);
-    chalkLogger.log("service", `Card created`);
+    chalkLogger.log("service", `Card (id ${savedCard.id}) created with cvv: ${cvv}`);
     return card;
 }
 
