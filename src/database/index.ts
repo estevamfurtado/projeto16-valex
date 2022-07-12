@@ -10,6 +10,9 @@ const { Pool } = pg;
 
 const databaseConfig = {
     connectionString: DB_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
 };
 
 const connection = new Pool(databaseConfig);
